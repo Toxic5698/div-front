@@ -18,14 +18,16 @@ export class DataService {
   ) {
   }
 
-  getAll(page: number): Observable<Response> {
-    return this.http.get<Response>(environment.apiUrls.backend + "get-all?page=" + page, this.httpOptions)
+  getAll(page: number, search: string | null): Observable<Response> {
+    const urlApendix = search ? "&name=" + search : "";
+    return this.http.get<Response>(environment.apiUrls.backend + "get-all?page=" + page + urlApendix, this.httpOptions)
       .pipe(
         map(response => {
           return response;
         })
       );
   }
+
   getStats(): Observable<Stats> {
     return this.http.get<Stats>(environment.apiUrls.backend + "stats", this.httpOptions).pipe(
       map(response => {

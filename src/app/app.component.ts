@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
   totalCount: number | undefined;
   stats: Stats | undefined;
   pages: Array<number> = [1];
+  searchControl = new FormControl('');
 
 
   constructor(private dataService: DataService) {
@@ -80,8 +81,8 @@ export class AppComponent implements OnInit {
     this.backToNewForm();
   }
 
-  getAllAndStats(page: number = 1) {
-    this.dataService.getAll(page).subscribe(
+  getAllAndStats(page: number = 1, search: string | null = '') {
+    this.dataService.getAll(page, search).subscribe(
       (response: Response) => {
         this.movieList = response.items;
         this.totalCount = response.count;
@@ -94,5 +95,10 @@ export class AppComponent implements OnInit {
         this.stats = response;
       }
     );
+  }
+
+  cancelSearch() {
+    this.searchControl.reset();
+    this.getAllAndStats();
   }
 }
