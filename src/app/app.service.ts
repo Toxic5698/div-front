@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {map, Observable} from "rxjs";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from "../environments/environment";
-import {Response} from "../models/interfaces";
+import {Response, Stats} from "../models/interfaces";
 
 @Injectable()
 export class DataService {
@@ -18,13 +18,21 @@ export class DataService {
   ) {
   }
 
-  getAll(): Observable<Response> {
-    return this.http.get<Response>(environment.apiUrls.backend + "get-all", this.httpOptions)
+  getAll(page: number): Observable<Response> {
+    return this.http.get<Response>(environment.apiUrls.backend + "get-all?page=" + page, this.httpOptions)
       .pipe(
         map(response => {
           return response;
         })
       );
+  }
+  getStats(): Observable<Stats> {
+    return this.http.get<Stats>(environment.apiUrls.backend + "stats", this.httpOptions).pipe(
+      map(response => {
+          return response;
+        }
+      )
+    );
   }
 
   save(data: any) {
@@ -36,7 +44,9 @@ export class DataService {
   }
 
   update(data: any) {
-    return this.http.patch(environment.apiUrls.backend + "update/" + data.id, {name: data.name, rate: data.rate}, this.httpOptions);
+    return this.http.patch(environment.apiUrls.backend + "update/" + data.id, {
+      name: data.name,
+      rate: data.rate
+    }, this.httpOptions);
   }
-
 }

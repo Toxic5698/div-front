@@ -1,77 +1,98 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup} from "@angular/forms";
 import {DataService} from "./app.service";
-import {Response} from "../models/interfaces";
+import {Response, Stats} from "../models/interfaces";
 import {tap} from "rxjs";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  range = new FormControl(50);
-
+  newRange = new FormControl(50);
   newForm = new FormGroup({
     name: new FormControl(''),
-    rate: this.range
+    rate: this.newRange
   });
+  editRange = new FormControl(50);
   editForm = new FormGroup({
+    name: new FormControl(''),
+    rate: this.editRange
   });
-  MovieList: any[] = [];
+  editItem: any;
+  movieList: any[] = [];
   totalCount: number | undefined;
-  editData: any;
+  stats: Stats | undefined;
+  pages: Array<number> = [1];
+
 
   constructor(private dataService: DataService) {
   }
 
 
   ngOnInit() {
-    this.getAll();
+    this.getAllAndStats();
   }
 
   onSubmit() {
     this.dataService.save(this.newForm.value).pipe(
-       tap(() => {
-         this.getAll();
-       })
+      tap(() => {
+        this.getAllAndStats();
+      })
     )
-    .subscribe();
+      .subscribe();
   }
 
   deleteMovie(id: number) {
     this.dataService.delete(id).pipe(
-       tap(() => {
-         this.getAll();
-       })
+      tap(() => {
+        this.getAllAndStats();
+      })
     )
-    .subscribe();
+      .subscribe();
   }
 
   editMovie(id: number) {
-    const item = this.MovieList.find(i => i.id === id);
-    item.edit = true;
-    this.editData = item;
+    const item = this.movieList.find(i => i.id === id);
+    this.editItem = item;
+    this.editForm.patchValue({
+      name: item.name,
+      rate: item.rate
+    });
+  }
+
+  backToNewForm() {
+    this.editItem = undefined;
   }
 
   updateMovie(id: number) {
     const updatedData = {
-    ...this.editForm.value,
-    id
-  };
+      ...this.editForm.value,
+      id
+    };
     this.dataService.update(updatedData).pipe(
-       tap(() => {
-         this.getAll();
-       })
+      tap(() => {
+        this.getAllAndStats();
+      })
     )
-    .subscribe();
+      .subscribe();
+    this.backToNewForm();
   }
 
-  getAll(){
-    this.dataService.getAll().subscribe(
-        (response: Response) => {
-          this.MovieList = response.items;
-          this.totalCount = response.count;
-        });
+  getAllAndStats(page: number = 1) {
+    this.dataService.getAll(page).subscribe(
+      (response: Response) => {
+        this.movieList = response.items;
+        this.totalCount = response.count;
+        this.pages = Array(Math.ceil(this.totalCount / 10))
+          .fill(0)
+          .map((x, i) => i + 1);
+      });
+    this.dataService.getStats().subscribe(
+      (response: Stats) => {
+        this.stats = response;
+      }
+    );
   }
 }
